@@ -1,0 +1,19 @@
+{
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "build debug",
+      "command": "bash",
+      "args": [".vscode/build-debug.bash"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Build project with debug configuration."
+    }
+  ]
+}
