@@ -1,32 +1,30 @@
-# example-dev-container
+# example-socket
 
-docker コンテナに VS Code で接続し、c++のプログラムをデバッグする例。
+unix ドメインソケットでプロセス間で通信する例
 
-## コンテナ
+[参考 1](http://cms.phys.s.u-tokyo.ac.jp/~naoki/CIPINTRO/NETWORK/localtcp.html)
+[参考 2](http://cms.phys.s.u-tokyo.ac.jp/~naoki/CIPINTRO/NETWORK/struct.html)
 
-ubuntu 24.04 をベースに、基本的な開発用ツールをインストール。`make`を実行すれば、イメージのビルドが走ったあとに、コンテナが起動する。
-コンテナを起動したあとに、VS Code で `Dev Containers: Attach to Running Container`を実行すれば、コンテナに接続される。
+## ざっくりとした手順
 
-## cmake
+サーバー側
 
-プログラムのビルドに cmake を使用。関連するファイルだけ抜粋すると以下のような感じ。
+1. `sockaddr_un`構造体を初期化する。（昔のCプログラムは変数名が略されていて分かりづらいが、多分、`socket address unix network`だと思う）
+2. `bind`する
+3. `listen`する
+4. `accept`する
+5. `recv`する
 
-```
-.
-├── CMakeLists.txt
-└── src
-    ├── CMakeLists.txt
-    ├── hello.cpp
-    ├── hello.hpp
-    └── main.cpp
-```
+`bind`, `listen`, `accept`の違いは良くわかってない。`accept`のところでプログラムはブロックする。実際のデータは`recv`で受け取る。
 
-## tasks.json, launch.json
+クライアント側
 
-tasks.json に、プログラムをビルドする手順が書かれている。
+1. `sockaddr_un`構造体を初期化する。これはサーバーと同じ。アドレス（=ファイルパス）をサーバーと共有しておく必要がある。
+2. `connect`する
+3. `send`する
 
-launch.json に、デバッガを起動するための設定が書かれている。
+## その他
 
-[参考にしたサイト](https://motchy869.com/wordpress/2021/05/09/cmake%E3%81%A7%E3%83%93%E3%83%AB%E3%83%89%E3%81%97%E3%81%A6%E3%81%84%E3%82%8B%E7%92%B0%E5%A2%83%E4%B8%8B%E3%81%A7vs-code%E3%81%A7%E3%83%87%E3%83%90%E3%83%83%E3%82%B0%E3%81%99%E3%82%8B/)
+unixドメインソケットには、ストリーム型（TCP型）とデータグラム型（UDP型）がある。ここでの例はTCP型。
 
-`main.cpp`を開いた状態で、`F5`を押せばデバッグが始まる。
+unixドメインソケットは、同一ホスト内でのプロセス間通信に使われる。ネットワーク越しに他のホストと通信する方法も、ソケット通信と呼ばれ、ほとんど同じAPIで動作する。
