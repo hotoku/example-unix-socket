@@ -1,4 +1,5 @@
-// #include <stdio.h>
+#include "utils.hpp"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -13,27 +14,8 @@
 
 int main(void)
 {
-    // LOCAL で STREAM なソケットの作成
-    int s = socket(AF_LOCAL, SOCK_STREAM, 0);
-
-    // 接続の目印の指定
-    sockaddr_un addr;
-
-    // addrが占めるメモリを0初期化
-    bzero(&addr, sizeof(addr));
-
-    // AF_LOCAL は AF_UNIX と同じ。AF = Address Family
-    addr.sun_family = AF_LOCAL;
-
-    // アドレスを構造体にコピー。UNIXドメインソケットでは、ファイルパスがアドレスになる
-    strcpy(addr.sun_path, SOCKNAME);
-
-    // ソケットの回線への接続
-    if (connect(s, (sockaddr *)&addr, sizeof(addr)) < 0)
-    {
-        perror("connect");
-        exit(1);
-    }
+    std::cout << "connecting" << std::endl;
+    int fd = example_socket::socket_connect(SOCKNAME);
 
     // 送信するデータ
     std::stringstream ss;
@@ -42,14 +24,28 @@ int main(void)
     {
         ss << "Hello, World! " << i << std::endl;
     }
+    const auto msg = ss.str();
+    const std::size_t msg_size = msg.size();
 
-    // データの送信
-    const auto num = ss.str().size();
-    const auto sent = send(s, ss.str().c_str(), ss.str().size(), 0);
-    std::cout << "Sent " << sent << " bytes of " << num << " bytes." << std::endl;
+    /**
+     * 最初にデータのサイズを送信
+     * note: 最初にデータサイズが来ること、データサイズのデータはsize_t型であることを
+     * サーバーと共有しておく必要がある。
+     */
+    auto sent = send(fd, &msg_size, sizeof(msg_size), 0);
+    if (sent < sizeof(msg_size))
+    {
+        throw std::runtime_error("send size");
+    }
 
-    // 回線の切断
-    close(s);
+    // データ本体の送信
+    sent = send(fd, msg.c_str(), msg.size(), 0);
+    if (sent < msg.size())
+    {
+        throw std::runtime_error("send data");
+    }
+
+    close(fd);
 
     return 0;
 }
