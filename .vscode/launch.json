@@ -5,10 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(gdb) build and debug active file",
+      "name": "debug server",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/debug/src/a.out",
+      "program": "${workspaceFolder}/debug/src/server",
       "args": [],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
