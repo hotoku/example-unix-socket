@@ -8,7 +8,7 @@
       "name": "(gdb) build and debug active file",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/debug/a.out",
+      "program": "${workspaceFolder}/debug/src/a.out",
       "args": [],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",

@@ -3,7 +3,7 @@ CONTAINER_NAME = $(IMAGE_NAME)
 
 .PHONY: run
 run: image
-	docker run --name $(CONTAINER_NAME) -it --rm -v $(PWD)/dev:/workspace $(IMAGE_NAME)
+	docker run --name $(CONTAINER_NAME) -it --rm -v $(PWD):/workspace $(IMAGE_NAME)
 
 .PHONY: image
 image:
