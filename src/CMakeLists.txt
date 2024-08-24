@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(example-socket CXX)
+add_library(utils STATIC utils.cpp)
 add_executable(server server.cpp) 
 add_executable(client client.cpp) 
+target_link_libraries(server utils)
+target_link_libraries(client utils)
