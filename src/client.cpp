@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 // 接続の目印となるファイル
 #define SOCKNAME "/tmp/udsock"
@@ -40,10 +41,23 @@ int main(void)
 
     // データ本体の送信
     sent = send(fd, msg.c_str(), msg.size(), 0);
+    std::cout << "sent: " << sent << " bytes" << std::endl;
     if (sent < msg.size())
     {
         throw std::runtime_error("send data");
     }
+
+    // レスポンスの受信
+    std::size_t res_size;
+    int read = recv(fd, &res_size, sizeof(res_size), 0);
+    if (read < sizeof(res_size))
+    {
+        throw std::runtime_error("recv size");
+    }
+    std::vector<char> data;
+    example_socket::recv_all(fd, data, res_size);
+    const std::string res(data.begin(), data.end());
+    std::cout << "Received response: " << res << std::endl;
 
     close(fd);
 
