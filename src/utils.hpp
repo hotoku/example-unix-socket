@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <vector>
 
 namespace example_socket
 {
@@ -18,6 +19,8 @@ namespace example_socket
      * socket_file_pathのアドレスに接続するunixドメインソケットを作る。
      */
     int socket_connect(const char *socket_file_path);
+
+    void recv_all(int fd_client, std::vector<char> &ret, size_t msg_size);
 } // namespace example_socket
 
 #endif // UTILS_HPP

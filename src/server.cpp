@@ -17,43 +17,43 @@ int main(void)
 {
   unlink(SOCKNAME);
 
-  int fd_base = example_socket::socket_bind_listen(SOCKNAME);
-  int s = accept(fd_base, NULL, NULL);
+  const int fd_base = example_socket::socket_bind_listen(SOCKNAME);
+  const int fd_client = accept(fd_base, NULL, NULL);
 
   // 最初にデータサイズを受診する
   size_t msg_size;
-  int read = recv(s, &msg_size, sizeof(msg_size), 0);
+  int read = recv(fd_client, &msg_size, sizeof(msg_size), 0);
   if (read < sizeof(msg_size))
   {
     throw std::runtime_error("recv size");
   }
 
   // データ本体を受信する
-  const size_t buf_size = 64;
-  char buf[buf_size + 1];
+  std::vector<char> data;
+  example_socket::recv_all(fd_client, data, msg_size);
+  std::string msg(data.begin(), data.end());
+
+  std::cout << "Received message: " << msg << std::endl;
+
+  // レスポンスを返す
   std::stringstream ss;
-  size_t expect = std::min(msg_size, buf_size);
-  while ((read = recv(s, buf, expect, 0)) > 0)
+  ss << "This is server. " << msg.size() << " bytes received.";
+  msg = ss.str();
+  msg_size = msg.size();
+
+  int sent = send(fd_client, &msg_size, sizeof(msg_size), 0);
+  if (sent < sizeof(msg_size))
   {
-    if (read < expect)
-    {
-      throw std::runtime_error("recv data");
-    }
-    buf[read] = '\0';
-    ss << buf;
-    msg_size -= read;
-    expect = std::min(msg_size, buf_size);
-    if (expect == 0)
-    {
-      break;
-    }
+    throw std::runtime_error("send size");
+  }
+  sent = send(fd_client, msg.c_str(), msg.size(), 0);
+  if (sent < msg.size())
+  {
+    throw std::runtime_error("send data");
   }
 
-  // データの表示
-  std::cout << "Server received : " << ss.str() << std::endl;
-
   // ソケットの廃止
-  close(s);
+  close(fd_client);
   close(fd_base);
 
   // 目印の削除(義務ではないが礼儀)

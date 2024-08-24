@@ -1,7 +1,10 @@
+#include "utils.hpp"
+
 #include <stdexcept>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <algorithm>
 
 namespace example_socket
 {
@@ -71,4 +74,27 @@ namespace example_socket
         return fd;
     }
 
+    void recv_all(int fd_client, std::vector<char> &ret, size_t msg_size)
+    {
+        ret.clear();
+
+        const size_t buf_size = 64;
+        char buf[buf_size];
+        size_t expect = std::min(msg_size, buf_size);
+        int read;
+        while ((read = recv(fd_client, buf, expect, 0)) > 0)
+        {
+            if (read < expect)
+            {
+                throw std::runtime_error("recv data");
+            }
+            ret.insert(ret.end(), buf, buf + read);
+            msg_size -= read;
+            expect = std::min(msg_size, buf_size);
+            if (expect == 0)
+            {
+                break;
+            }
+        }
+    }
 } // namespace example_socket
