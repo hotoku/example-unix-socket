@@ -5,4 +5,5 @@ RUN	apt-get update && apt-get install -y \
 	cmake \
 	gdb \
 	git
-WORKDIR	/workspace
+ARG	WORKDIR
+WORKDIR	${WORKDIR}
