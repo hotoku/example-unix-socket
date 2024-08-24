@@ -3,9 +3,9 @@
   "tasks": [
     {
       "type": "cppbuild",
-      "label": "build debug",
+      "label": "cmake generate makefile - debug",
       "command": "bash",
-      "args": [".vscode/build-debug.bash"],
+      "args": ["-c", "cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug"],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -15,6 +15,29 @@
         "isDefault": true
       },
       "detail": "Build project with debug configuration."
+    },
+    {
+      "type": "cppbuild",
+      "label": "cmake build - debug",
+      "command": "bash",
+      "args": ["-c", "cmake --build build/debug"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Build project with debug configuration.",
+      "dependsOrder": "sequence",
+      "dependsOn": ["cmake generate makefile - debug"]
+    },
+    {
+      "type": "shell",
+      "label": "clean",
+      "command": "bash",
+      "args": ["-c", "rm -rf build"]
     }
   ]
 }
