@@ -18,11 +18,11 @@ namespace es = example_socket;
 
 int main(void) {
   std::cout << "connecting" << std::endl;
-  int fd = -1;
+  auto fd = es::FileDescriptor::create(-1);
   while (true) {
     try {
       fd = es::socket_connect(SOCKNAME);
-      std::cout << "connected: " << fd << std::endl;
+      std::cout << "connected: " << fd->get() << std::endl;
       break;
     } catch (const std::exception &e) {
       std::cerr << e.what() << std::endl;
@@ -31,13 +31,11 @@ int main(void) {
   }
 
   std::vector<char> msg;
-  es::recv(fd, msg);
+  es::recv(fd->get(), msg);
   std::cout << "received: " << std::string(msg.begin(), msg.end()) << std::endl;
 
-  es::recv(fd, msg);
+  es::recv(fd->get(), msg);
   std::cout << "received: " << std::string(msg.begin(), msg.end()) << std::endl;
-
-  close(fd);
 
   return 0;
 }

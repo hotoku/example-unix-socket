@@ -6,25 +6,39 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 
 static auto send_orig = send;
 static auto recv_orig = recv;
 
 namespace example_socket {
+FileDescriptor::FileDescriptor(int fd_) : fd(fd_) {}
+FileDescriptor::~FileDescriptor() {
+  if (fd >= 0) {
+    std::cout << "closing: " << this->fd << std::endl;
+    close(fd);
+  }
+}
+int FileDescriptor::get() const { return fd; }
+FileDescriptorPtr FileDescriptor::create(int fd) {
+  return std::make_unique<FileDescriptor>(fd);
+}
+
 void init_addr(sockaddr_un *addr, const char *socket_file_path) {
   bzero(addr, sizeof(*addr));
   addr->sun_family = AF_LOCAL;
   strcpy(addr->sun_path, socket_file_path);
 }
 
-int socket_bind_listen(const char *socket_file_path) {
+FileDescriptorPtr socket_bind_listen(const char *socket_file_path) {
   /**
    * AF_LOCAL: UNIXドメインソケット
    * SOCK_STREAM: ストリームソケット、の意味。
    */
-  int fd = socket(AF_LOCAL, SOCK_STREAM, 0);
-  if (fd < 0) {
+
+  auto fd = FileDescriptor::create(socket(AF_LOCAL, SOCK_STREAM, 0));
+  if (fd->get() < 0) {
     throw std::runtime_error("socket");
   }
 
@@ -34,40 +48,36 @@ int socket_bind_listen(const char *socket_file_path) {
   /**
    * bind: ソケットにアドレスを割り当てる
    */
-  int ret = bind(fd, (sockaddr *)&addr, sizeof(addr));
+  int ret = bind(fd->get(), (sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
-    close(fd);
     throw std::runtime_error("bind");
   }
 
   /**
    * listen: ソケットを接続待ち状態にする
    */
-  ret = listen(fd, 1);
+  ret = listen(fd->get(), 1);
   if (ret < 0) {
-    close(fd);
     throw std::runtime_error("listen");
   }
 
   return fd;
 }
 
-int socket_connect(const char *socket_file_path) {
-  int fd = socket(AF_LOCAL, SOCK_STREAM, 0);
-  if (fd < 0) {
-    throw std::runtime_error("socket");
+FileDescriptorPtr socket_connect(const char *socket_file_path) {
+  auto fd = FileDescriptor::create(socket(AF_LOCAL, SOCK_STREAM, 0));
+  if (fd->get() < 0) {
+    throw std::runtime_error("failed to open socket");
   }
-
   sockaddr_un addr;
   init_addr(&addr, socket_file_path);
 
   /**
    * connect: ソケットをサーバーに接続する
    */
-  const auto ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
+  const auto ret = connect(fd->get(), (sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
-    close(fd);
-    throw std::runtime_error("connect");
+    throw std::runtime_error("failed connecting to server");
   }
 
   return fd;

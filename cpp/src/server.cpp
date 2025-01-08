@@ -32,17 +32,14 @@ std::string make_message() { /* 適当な長さのメッセージを作る */
 int main(void) {
   unlink(SOCKNAME);
 
-  const int fd_base = es::socket_bind_listen(SOCKNAME);
-  const int fd_client = accept(fd_base, NULL, NULL);
+  const auto fd_base = es::socket_bind_listen(SOCKNAME);
+  const auto fd_client = accept(fd_base->get(), NULL, NULL);
 
   const auto m = make_message();
   std::vector<char> msg(m.begin(), m.end());
 
   es::send(fd_client, msg);
   es::send(fd_client, msg);
-
-  close(fd_client);
-  close(fd_base);
 
   unlink(SOCKNAME);
 
