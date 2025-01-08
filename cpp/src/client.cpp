@@ -18,7 +18,17 @@ namespace es = example_socket;
 
 int main(void) {
   std::cout << "connecting" << std::endl;
-  int fd = es::socket_connect(SOCKNAME);
+  int fd = -1;
+  while (true) {
+    try {
+      fd = es::socket_connect(SOCKNAME);
+      std::cout << "connected: " << fd << std::endl;
+      break;
+    } catch (const std::exception &e) {
+      std::cerr << e.what() << std::endl;
+      sleep(1);
+    }
+  }
 
   std::vector<char> msg;
   es::recv(fd, msg);

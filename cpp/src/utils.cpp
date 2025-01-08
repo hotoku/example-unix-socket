@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <stdexcept>
@@ -35,6 +36,7 @@ int socket_bind_listen(const char *socket_file_path) {
    */
   int ret = bind(fd, (sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
+    close(fd);
     throw std::runtime_error("bind");
   }
 
@@ -43,6 +45,7 @@ int socket_bind_listen(const char *socket_file_path) {
    */
   ret = listen(fd, 1);
   if (ret < 0) {
+    close(fd);
     throw std::runtime_error("listen");
   }
 
@@ -63,6 +66,7 @@ int socket_connect(const char *socket_file_path) {
    */
   const auto ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
+    close(fd);
     throw std::runtime_error("connect");
   }
 
