@@ -78,3 +78,23 @@ async function waitUntilServerIsReady(): Promise<net.Socket> {
 - 接続に失敗 -> `error`イベントが発生、その後`close`イベントが発生 -> `client.on("close", ...)`で登録したリスナーが発動 -> `reject`される
 
 というような動作をするようになっている。むずかしい
+
+## Docker 越しに試す
+
+イメージをビルド
+
+```shell
+docker build -t ex-unix-sock:latest .
+```
+
+サーバーを起動
+
+```shell
+docker run -v $(pwd)/shared:/tmp -it --rm --name server ex-unix-sock:latest start-server
+```
+
+クライアントを起動
+
+```shell
+docker run -v $(pwd)/shared:/tmp -it --rm --name client ex-unix-sock:latest start-client
+```
