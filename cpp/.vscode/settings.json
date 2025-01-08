@@ -1,3 +1,8 @@
 {
-  "makefile.configureOnOpen": false
+  "makefile.configureOnOpen": false,
+  "files.associations": {
+    "ostream": "cpp",
+    "stdexcept": "cpp",
+    "sstream": "cpp"
+  }
 }

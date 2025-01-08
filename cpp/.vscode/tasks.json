@@ -5,7 +5,7 @@
       "type": "cppbuild",
       "label": "cmake generate makefile - debug",
       "command": "bash",
-      "args": ["-c", "cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug"],
+      "args": ["-c", "cmake -S . -B debug -DCMAKE_BUILD_TYPE=Debug"],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -20,7 +20,7 @@
       "type": "cppbuild",
       "label": "cmake build - debug",
       "command": "bash",
-      "args": ["-c", "cmake --build build/debug"],
+      "args": ["-c", "cmake --build debug"],
       "options": {
         "cwd": "${workspaceFolder}"
       },

@@ -1,62 +1,49 @@
-#include "utils.hpp"
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <sys/un.h>
-#include <sstream>
-#include <iostream>
+#include <time.h>
+#include <unistd.h>
+
 #include <algorithm>
+#include <iostream>
+#include <sstream>
+
+#include "utils.hpp"
 
 // 接続の目印となるファイル
 #define SOCKNAME "/tmp/udsock"
 
-int main(void)
-{
+namespace es = example_socket;
+
+namespace {
+std::string make_message() { /* 適当な長さのメッセージを作る */
+  std::stringstream ss;
+  for (int i = 0; i < 32; i++) {
+    if (i > 0) ss << "|";
+    ss << i;
+  }
+  const std::string& m = ss.str();
+  return m;
+}
+}  // namespace
+
+int main(void) {
   unlink(SOCKNAME);
 
-  const int fd_base = example_socket::socket_bind_listen(SOCKNAME);
+  const int fd_base = es::socket_bind_listen(SOCKNAME);
   const int fd_client = accept(fd_base, NULL, NULL);
 
-  // 最初にデータサイズを受診する
-  size_t msg_size;
-  int read = recv(fd_client, &msg_size, sizeof(msg_size), 0);
-  if (read < sizeof(msg_size))
-  {
-    throw std::runtime_error("recv size");
-  }
+  const auto m = make_message();
+  std::vector<char> msg(m.begin(), m.end());
 
-  // データ本体を受信する
-  std::vector<char> data;
-  example_socket::recv_all(fd_client, data, msg_size);
-  std::string msg(data.begin(), data.end());
+  es::send(fd_client, msg);
+  es::send(fd_client, msg);
 
-  std::cout << "Received message: " << msg << std::endl;
-
-  // レスポンスを返す
-  std::stringstream ss;
-  ss << "This is server. " << msg.size() << " bytes received.";
-  msg = ss.str();
-  msg_size = msg.size();
-
-  int sent = send(fd_client, &msg_size, sizeof(msg_size), 0);
-  if (sent < sizeof(msg_size))
-  {
-    throw std::runtime_error("send size");
-  }
-  sent = send(fd_client, msg.c_str(), msg.size(), 0);
-  if (sent < msg.size())
-  {
-    throw std::runtime_error("send data");
-  }
-
-  // ソケットの廃止
   close(fd_client);
   close(fd_base);
 
-  // 目印の削除(義務ではないが礼儀)
   unlink(SOCKNAME);
 
   return 0;
